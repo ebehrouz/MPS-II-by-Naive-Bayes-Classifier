@@ -1,0 +1,92 @@
+
+# Set up your library first, then keep a copy of training and posterior dataset in your library. 
+#The posterior dataset is the one that you are agoing to classify patients for MPS II, then install the following packages. 
+
+
+library(e1071)
+library(caret)
+library(klaR)
+library(FSelector)
+library(bnclassify)
+library(pROC)
+library(gmodels)
+
+
+#  Model construction using training dataset and NaiveBayes
+set.seed(3459)
+NB=read.csv("Training.csv",header=TRUE)
+
+
+model=naiveBayes(Disease~Age+Apnea+COPD+Hearing+SpinalInjury+Hernia+Otitis+Macrocephaly+Respiratory
+                 +Carpal+Cardiac+Hepatosplenomegaly+Skin+Stature+Vision+Seizure+Diarrhea+Joint+Pneumonia+Bladder,data=NB )
+
+model
+
+#Rank Features By Importance
+NB=read.csv("Training.csv",header=TRUE)
+summary(NB)
+control = trainControl(method="repeatedcv", number=10, repeats=3) 
+model = train(Disease~., data=NB, method="nb", preProcess="scale", trControl=control)
+importance <- varImp(model, scale=FALSE)
+print(importance)
+plot(importance)
+
+
+#Feature Selection using a backward slection (Recursive Feature Elimination),cv=Cross-Validation
+set.seed(123)
+control = rfeControl(functions=nbFuncs, method="repeatedcv", repeats=3)  
+results = rfe(NB[,1:20], NB[,21], sizes=c(1:20), rfeControl=control)
+print(results)
+plot(results, type=c("g", "o"))
+predictors(results)
+
+
+#Validation: bootstrap
+NB=read.csv("Training.csv",header=TRUE) 
+
+set.seed(3460)
+NB=read.csv(file="Training.csv",header=TRUE) 
+Trained = trainControl(method="boot", number=1000)
+
+model = train(Disease~Age+Apnea+COPD+Hearing+SpinalInjury+Hernia+Otitis+Macrocephaly+Respiratory
+              +Carpal+Cardiac+Hepatosplenomegaly+Skin+Stature+Vision+Seizure+Diarrhea+Joint,data=NB, trControl=Trained, method="nb")
+print(model)
+confusionMatrix(model, "none" )
+
+
+# define an 70%/30% train/test split of the dataset
+# Training1.csv dataset is the same as Training.csv, but 2 features (Diarrhea	and Joint) were removed
+
+NB1=read.csv(file="Training1.csv",header=TRUE) 
+set.seed(12345) 
+A_rand <- NB1[order(runif(1044)), ]
+A_train <- A_rand[1:730, ]
+A_test <- A_rand[731:1044, ]
+prop.table(table(A_train$Disease))
+prop.table(table(A_test$Disease))
+A_classifier <- naiveBayes(A_train, A_train$Disease)
+A_predicted <- predict(A_classifier, A_test)
+CrossTable(A_predicted, A_test$Disease, prop.chisq = FALSE,prop.t = FALSE,dnn = c("Predicted","Actual"))
+
+cm=confusionMatrix(A_predicted,A_test$Disease, positive = "Yes")
+cm
+
+
+#  Prediction
+set.seed(123)
+NB=read.csv("Training.csv",header=TRUE) # converting numeric to classes for all feautures
+
+model=naiveBayes(Disease~Age+Apnea+COPD+Hearing+SpinalInjury+Hernia+Otitis+Macrocephaly+Respiratory
+                 +Carpal+Cardiac+Hepatosplenomegaly+Skin+Stature+Vision+Seizure+Diarrhea+Joint,data=NB )
+
+Posterior=read.csv("MPS.csv",header=TRUE)
+Predicted=predict(model,Posterior,type="class",laplace=0)
+write.csv(Predicted,"Predicted2.csv")
+summary(Predicted)
+
+
+# Correlation analysis for Features
+# Corr.csv is exactly the same as posterior dataset, but character variables have been converted to numeric for Pearson correlation
+Corr=read.csv("Corr.csv",header=TRUE) 
+my_data <- Corr[, c(2:20)]
+cor(my_data, use="complete.obs", method="pearson") 
