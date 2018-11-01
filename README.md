@@ -9,10 +9,10 @@ The coding starts by SAS programing with some basic works such as data mining an
 Data
 
 
-The request for having a copy of training and test datasets for this project could be done through CPCSSN by the following email:
+The request for getting a copy of training and test dataset for this project could be done through CPCSSN by the following email:
 research@cpcssn.org
 
-When you apply for that, please mention data for Mucopolysaccharidosis type II detection by Naïve Bayes Classifier.
+When you apply for the data, please mention data for Mucopolysaccharidosis type II detection by Naïve Bayes Classifier.
 
 
 Authors
