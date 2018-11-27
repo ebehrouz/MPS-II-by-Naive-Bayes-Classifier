@@ -27,9 +27,12 @@ NB=read.csv("Training.csv",header=TRUE)
 summary(NB)
 control = trainControl(method="repeatedcv", number=10, repeats=3) 
 model = train(Disease~., data=NB, method="nb", preProcess="scale", trControl=control)
-importance <- varImp(model, scale=FALSE)
+importance=filterVarImp(NB[, 1:20], NB[, 21], nonpara = TRUE)
 print(importance)
-plot(importance)
+importance <- varImp(model, scale=FALSE )
+print(importance)
+
+
 
 
 #Feature Selection using a backward slection (Recursive Feature Elimination),cv=Cross-Validation
