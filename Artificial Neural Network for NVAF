@@ -751,13 +751,13 @@ Run;
 
 /* To make subsets*/
 
-OPTIONS COMPRESS=YES REUSE=YES; /*This was used for ANN training*/
+OPTIONS COMPRESS=YES REUSE=YES; /*This was used for ANN training and Enterprise Miner*/
 Data MLAF2017.Training ;
 Set  MLAF2017.ML2;
 where Network_ID not eq  5;
 Run;
 
-OPTIONS COMPRESS=YES REUSE=YES; /*This was used for ANN scoring*/
+OPTIONS COMPRESS=YES REUSE=YES; /*This was used for ANN scoring and Enterprise Miner*/
 Data MLAF2017.Score  (Drop= count);
 Set  MLAF2017.ML2;
 Rename NVAF=EHR_NVAF;
